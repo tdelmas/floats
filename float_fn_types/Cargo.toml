@@ -1,0 +1,16 @@
+[package]
+name = "float_fn_types"
+version.workspace = true
+edition.workspace = true
+license.workspace = true
+repository.workspace = true
+include = [
+  "Cargo.toml",
+  "src/*.rs",
+  "src/**/*.rs",
+  "*.md",
+]
+readme = "./README.md"
+rust-version.workspace = true
+
+[dependencies]
