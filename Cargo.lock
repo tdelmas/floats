@@ -185,6 +185,7 @@ dependencies = [
 name = "typed_floats_macros"
 version = "0.7.4"
 dependencies = [
+ "float_fn_types",
  "proc-macro2",
  "quote",
  "syn",

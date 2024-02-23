@@ -1,11 +1,11 @@
 
 #[derive(Debug,Clone,Copy, Default)]
 pub struct FloatPossibilities {
-    nan: bool,
-    zero: bool,
-    infinite: bool,
-    positive: bool,
-    negative: bool,
+    pub nan: bool,
+    pub zero: bool,
+    pub infinite: bool,
+    pub positive: bool,
+    pub negative: bool,
 }
 
 #[derive(Clone, Copy)]

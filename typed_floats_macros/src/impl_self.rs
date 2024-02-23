@@ -14,17 +14,7 @@ pub fn get_impl_self() -> Vec<Op> {
                 quote! { -#var }
             }))
             .result(Box::new(|float| {
-                let mut output_spec = float.s.clone();
-
-                if !output_spec.accept_positive {
-                    output_spec.accept_positive = true;
-                    output_spec.accept_negative = false;
-                } else if !output_spec.accept_negative {
-                    output_spec.accept_positive = false;
-                    output_spec.accept_negative = true;
-                }
-
-                ReturnTypeSpecification::FloatSpecifications(output_spec)
+                float_fn_types::core::ops::neg(float)
             }))
             .build(),
         #[cfg(any(feature = "std", feature = "libm"))]

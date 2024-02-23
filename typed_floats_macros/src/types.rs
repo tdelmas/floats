@@ -239,6 +239,17 @@ impl OpBuilder {
 
         self
     }
+    
+    pub fn result2(mut self, result: float_fn_types::FloatPossibilities) -> Self {
+        self.op.result = Box::new(move |float, floats| {
+            
+            let output_spec = (result)(float);
+
+            return_type_definition2(&output_spec, floats)
+        });
+
+        self
+    }
 
     pub fn build(self) -> Op {
         self.op
