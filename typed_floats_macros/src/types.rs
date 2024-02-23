@@ -79,6 +79,29 @@ pub enum ReturnTypeDefinition {
     FloatDefinition(FloatDefinition),
 }
 
+pub fn return_type_definition2(
+    float: &float_fn_types::FnArg,
+    floats: &[FloatDefinition],
+) -> ReturnTypeDefinition {
+    let float = match float {
+        float_fn_types::FnArg::F32(float) => float,
+        float_fn_types::FnArg::F64(float) => float,
+    };
+
+    let float: ReturnTypeSpecification = if float.nan {
+        ReturnTypeSpecification::NativeFloat
+    } else {
+        ReturnTypeSpecification::FloatSpecifications(FloatSpecifications {
+            accept_inf: float.infinite,
+            accept_zero: float.zero,
+            accept_positive: float.positive,
+            accept_negative: float.negative,
+        })
+    };
+
+    return_type_definition(&float, floats)
+}
+
 pub fn return_type_definition(
     float: &ReturnTypeSpecification,
     floats: &[FloatDefinition],
@@ -145,6 +168,7 @@ pub fn output_name(output: &ReturnTypeDefinition, float_type: &Ident) -> proc_ma
 
 type OpCallback = Box<dyn Fn(&FloatDefinition) -> proc_macro2::TokenStream>;
 type SimpleResultCallback = Box<dyn Fn(&FloatDefinition) -> ReturnTypeSpecification>;
+type SimpleResultCallback2 = Box<dyn Fn(&float_fn_types::FnArg) -> float_fn_types::FnArg>;
 type ResultCallback = Box<dyn Fn(&FloatDefinition, &[FloatDefinition]) -> ReturnTypeDefinition>;
 type TestCallback = Box<dyn Fn(&Ident) -> proc_macro2::TokenStream>;
 
@@ -239,11 +263,18 @@ impl OpBuilder {
 
         self
     }
-    
-    pub fn result2(mut self, result: float_fn_types::FloatPossibilities) -> Self {
+
+    pub fn result2(mut self, result: SimpleResultCallback2) -> Self {
         self.op.result = Box::new(move |float, floats| {
-            
-            let output_spec = (result)(float);
+            let input = float_fn_types::FnArg::F32(float_fn_types::FloatPossibilities {
+                nan: false,
+                zero: float.s.accept_zero,
+                infinite: float.s.accept_inf,
+                positive: float.s.accept_positive,
+                negative: float.s.accept_negative,
+            });
+
+            let output_spec: float_fn_types::FnArg = (result)(&input);
 
             return_type_definition2(&output_spec, floats)
         });

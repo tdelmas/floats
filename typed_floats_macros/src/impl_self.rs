@@ -13,9 +13,7 @@ pub fn get_impl_self() -> Vec<Op> {
             .op_test(Box::new(|var| {
                 quote! { -#var }
             }))
-            .result(Box::new(|float| {
-                float_fn_types::core::ops::neg(float)
-            }))
+            .result2(Box::new(float_fn_types::core::ops::neg))
             .build(),
         #[cfg(any(feature = "std", feature = "libm"))]
         OpBuilder::new("abs")
@@ -50,14 +48,7 @@ pub fn get_impl_self() -> Vec<Op> {
                     quote! { self.get().abs() }
                 }
             }))
-            .result(Box::new(|float| {
-                let mut output_spec = float.s.clone();
-
-                output_spec.accept_positive = true;
-                output_spec.accept_negative = false;
-
-                ReturnTypeSpecification::FloatSpecifications(output_spec)
-            }))
+            .result2(Box::new(float_fn_types::core::ops::abs))
             .build(),
         #[cfg(any(feature = "std", feature = "libm"))]
         OpBuilder::new("ceil")

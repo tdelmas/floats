@@ -1,5 +1,4 @@
-
-#[derive(Debug,Clone,Copy, Default)]
+#[derive(Debug, Clone, Copy, Default)]
 pub struct FloatPossibilities {
     pub nan: bool,
     pub zero: bool,
@@ -14,6 +13,14 @@ pub enum FnArg {
     F64(FloatPossibilities),
 }
 
+macro_rules! return_possibilities {
+    ($lhs:ident) => {
+        match $lhs {
+            FnArg::F32(lhs) => FnArg::F32(possibilities(lhs)),
+            FnArg::F64(lhs) => FnArg::F64(possibilities(lhs)),
+        }
+    };
+}
 pub mod core {
     pub mod ops {
         use crate::*;
@@ -27,10 +34,19 @@ pub mod core {
                 }
             }
 
-            match lhs {
-                FnArg::F32(lhs) => FnArg::F32(possibilities(lhs)),
-                FnArg::F64(lhs) => FnArg::F64(possibilities(lhs)),
+            return_possibilities!(lhs)
+        }
+
+        pub fn abs(lhs: &FnArg) -> FnArg {
+            fn possibilities(lhs: &FloatPossibilities) -> FloatPossibilities {
+                FloatPossibilities {
+                    negative: false,
+                    positive: true,
+                    ..*lhs
+                }
             }
+
+            return_possibilities!(lhs)
         }
     }
 }
