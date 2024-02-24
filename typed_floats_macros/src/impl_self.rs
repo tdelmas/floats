@@ -71,15 +71,7 @@ pub fn get_impl_self() -> Vec<Op> {
                 ///
                 /// See [`f64::ceil()`] for more details.
             })
-            .result(Box::new(|float| {
-                let mut output_spec = float.s.clone();
-
-                if float.s.accept_negative {
-                    output_spec.accept_zero = true;
-                }
-
-                ReturnTypeSpecification::FloatSpecifications(output_spec)
-            }))
+            .result2(Box::new(float_fn_types::core::ops::ceil))
             .build(),
         #[cfg(any(feature = "std", feature = "libm"))]
         OpBuilder::new("floor")
@@ -102,15 +94,7 @@ pub fn get_impl_self() -> Vec<Op> {
                 ///
                 /// See [`f64::floor()`] for more details.
             })
-            .result(Box::new(|float| {
-                let mut output_spec = float.s.clone();
-
-                if float.s.accept_positive {
-                    output_spec.accept_zero = true;
-                }
-
-                ReturnTypeSpecification::FloatSpecifications(output_spec)
-            }))
+            .result2(Box::new(float_fn_types::core::ops::floor))
             .build(),
         #[cfg(any(feature = "std", feature = "libm"))]
         OpBuilder::new("round")
@@ -134,13 +118,7 @@ pub fn get_impl_self() -> Vec<Op> {
                 ///
                 /// See [`f64::round()`] for more details.
             })
-            .result(Box::new(|float| {
-                let mut output_spec = float.s.clone();
-
-                output_spec.accept_zero = true;
-
-                ReturnTypeSpecification::FloatSpecifications(output_spec)
-            }))
+            .result2(Box::new(float_fn_types::core::ops::round))
             .build(),
         #[cfg(any(feature = "std", feature = "libm"))]
         OpBuilder::new("trunc")
@@ -164,13 +142,7 @@ pub fn get_impl_self() -> Vec<Op> {
                 ///
                 /// See [`f64::trunc()`] for more details.
             })
-            .result(Box::new(|float| {
-                let mut output_spec = float.s.clone();
-
-                output_spec.accept_zero = true;
-
-                ReturnTypeSpecification::FloatSpecifications(output_spec)
-            }))
+            .result2(Box::new(float_fn_types::core::ops::trunc))
             .build(),
         #[cfg(any(feature = "std", feature = "libm"))]
         OpBuilder::new("fract")
@@ -199,18 +171,7 @@ pub fn get_impl_self() -> Vec<Op> {
             .comment(
                 "`fract` returns `+0.0` if the factional part is zero, even for negative numbers.",
             )
-            .result(Box::new(|float| {
-                if float.s.accept_inf {
-                    return ReturnTypeSpecification::NativeFloat;
-                }
-
-                let mut output_spec = float.s.clone();
-                output_spec.accept_zero = true;
-                // Returns POSITIVE zero if the factional part is zero
-                output_spec.accept_positive = true;
-
-                ReturnTypeSpecification::FloatSpecifications(output_spec)
-            }))
+            .result2(Box::new(float_fn_types::core::ops::fract))
             .build(),
         #[cfg(any(feature = "std", feature = "libm"))]
         OpBuilder::new("signum")
@@ -248,32 +209,7 @@ pub fn get_impl_self() -> Vec<Op> {
                     quote! { self.get().signum() }
                 }
             }))
-            .result(Box::new(|float| {
-                let spec = if !float.s.accept_negative {
-                    FloatSpecifications {
-                        accept_negative: false,
-                        accept_positive: true,
-                        accept_zero: false,
-                        accept_inf: false,
-                    }
-                } else if !float.s.accept_positive {
-                    FloatSpecifications {
-                        accept_negative: true,
-                        accept_positive: false,
-                        accept_zero: false,
-                        accept_inf: false,
-                    }
-                } else {
-                    FloatSpecifications {
-                        accept_negative: true,
-                        accept_positive: true,
-                        accept_zero: false,
-                        accept_inf: false,
-                    }
-                };
-
-                ReturnTypeSpecification::FloatSpecifications(spec)
-            }))
+            .result2(Box::new(float_fn_types::core::ops::signum))
             .build(),
         #[cfg(any(feature = "std", feature = "libm"))]
         OpBuilder::new("sqrt")
@@ -313,13 +249,7 @@ pub fn get_impl_self() -> Vec<Op> {
                     quote! { self.get().sqrt() }
                 }
             }))
-            .result(Box::new(|float| {
-                if float.s.accept_negative {
-                    return ReturnTypeSpecification::NativeFloat;
-                }
-
-                ReturnTypeSpecification::FloatSpecifications(float.s.clone())
-            }))
+            .result2(Box::new(float_fn_types::core::ops::sqrt))
             .build(),
         #[cfg(any(feature = "std", feature = "libm"))]
         OpBuilder::new("exp")
@@ -378,14 +308,7 @@ pub fn get_impl_self() -> Vec<Op> {
                 ///
                 /// See [`f64::exp2()`] for more details.
             })
-            .result(Box::new(|float| {
-                ReturnTypeSpecification::FloatSpecifications(FloatSpecifications {
-                    accept_negative: false,
-                    accept_positive: true,
-                    accept_zero: float.s.accept_negative,
-                    accept_inf: float.s.accept_positive,
-                })
-            }))
+            .result2(Box::new(float_fn_types::core::ops::exp2))
             .build(),
         #[cfg(any(feature = "std", feature = "libm"))]
         OpBuilder::new("ln")
@@ -424,18 +347,7 @@ pub fn get_impl_self() -> Vec<Op> {
                     quote! { self.get().ln() }
                 }
             }))
-            .result(Box::new(|float| {
-                if float.s.accept_negative {
-                    return ReturnTypeSpecification::NativeFloat;
-                }
-
-                ReturnTypeSpecification::FloatSpecifications(FloatSpecifications {
-                    accept_negative: true,
-                    accept_positive: true,
-                    accept_zero: true,
-                    accept_inf: float.s.accept_inf || float.s.accept_zero,
-                })
-            }))
+            .result2(Box::new(float_fn_types::core::ops::ln))
             .build(),
         #[cfg(any(feature = "std", feature = "libm"))]
         OpBuilder::new("log2")
