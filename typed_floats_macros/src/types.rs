@@ -88,14 +88,14 @@ pub fn return_type_definition2(
         float_fn_types::FnArg::F64(float) => float,
     };
 
-    let float: ReturnTypeSpecification = if float.nan {
+    let float: ReturnTypeSpecification = if float.nan != float_fn_types::Possible::No {
         ReturnTypeSpecification::NativeFloat
     } else {
         ReturnTypeSpecification::FloatSpecifications(FloatSpecifications {
-            accept_inf: float.infinite,
-            accept_zero: float.zero,
-            accept_positive: float.range.can_be_positive(),
-            accept_negative: float.range.can_be_negative(),
+            accept_inf: float.infinite != float_fn_types::Possible::No,
+            accept_zero: float.zero != float_fn_types::Possible::No,
+            accept_positive: float.range.can_be_positive() != float_fn_types::Possible::No,
+            accept_negative: float.range.can_be_negative() != float_fn_types::Possible::No,
         })
     };
 
@@ -256,9 +256,17 @@ impl OpBuilder {
     pub fn result(mut self, result: SimpleResultCallback) -> Self {
         self.op.result = Box::new(move |float, floats| {
             let input = float_fn_types::FnArg::F32(float_fn_types::FloatPossibilities {
-                nan: false,
-                zero: float.s.accept_zero,
-                infinite: float.s.accept_inf,
+                nan: float_fn_types::Possible::No,
+                zero: if float.s.accept_zero {
+                    float_fn_types::Possible::Yes
+                } else {
+                    float_fn_types::Possible::No
+                },
+                infinite: if float.s.accept_inf {
+                    float_fn_types::Possible::Yes
+                } else {
+                    float_fn_types::Possible::No
+                },
                 range: if float.s.accept_positive && float.s.accept_negative {
                     float_fn_types::Range::Full
                 } else if float.s.accept_positive {

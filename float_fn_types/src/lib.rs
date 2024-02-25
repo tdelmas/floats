@@ -6,10 +6,28 @@ pub enum Range {
     Positive,
 }
 
-// TODO: true/false/roundingError
+#[derive(Debug, Clone, Copy, Default, PartialEq)]
+pub enum Possible {
+    #[default]
+    Yes,
+    No,
+    WithRoundingError,
+}
+
+macro_rules! or {
+    ($lhs:expr, $rhs:expr) => {
+        if $lhs == Possible::Yes || $rhs == Possible::Yes {
+            Possible::Yes
+        } else if $lhs == Possible::WithRoundingError || $rhs == Possible::WithRoundingError {
+            Possible::WithRoundingError
+        } else {
+            Possible::No
+        }
+    };
+}
 
 impl Range {
-    pub const fn opposite(&self) -> Self {
+    pub fn opposite(&self) -> Self {
         match self {
             Range::Full => Range::Full,
             Range::Negative => Range::Positive,
@@ -17,20 +35,26 @@ impl Range {
         }
     }
 
-    pub const fn can_be_positive(&self) -> bool {
-        matches!(self, Range::Full | Range::Positive)
+    pub fn can_be_positive(&self) -> Possible {
+        match self {
+            Range::Full | Range::Positive => Possible::Yes,
+            Range::Negative => Possible::No,
+        }
     }
 
-    pub const fn can_be_negative(&self) -> bool {
-        matches!(self, Range::Full | Range::Negative)
+    pub fn can_be_negative(&self) -> Possible {
+        match self {
+            Range::Full | Range::Negative => Possible::Yes,
+            Range::Positive => Possible::No,
+        }
     }
 }
 
 #[derive(Debug, Clone, Copy, Default)]
 pub struct FloatPossibilities {
-    pub nan: bool,
-    pub zero: bool,
-    pub infinite: bool,
+    pub nan: Possible,
+    pub zero: Possible,
+    pub infinite: Possible,
     pub range: Range,
 }
 
@@ -53,8 +77,8 @@ pub mod core {
     pub mod ops {
         use crate::*;
 
-        pub const fn neg(lhs: &FnArg) -> FnArg {
-            const fn possibilities(lhs: &FloatPossibilities) -> FloatPossibilities {
+        pub fn neg(lhs: &FnArg) -> FnArg {
+            fn possibilities(lhs: &FloatPossibilities) -> FloatPossibilities {
                 FloatPossibilities {
                     range: lhs.range.opposite(),
                     ..*lhs
@@ -64,8 +88,8 @@ pub mod core {
             return_possibilities!(lhs)
         }
 
-        pub const fn abs(lhs: &FnArg) -> FnArg {
-            const fn possibilities(lhs: &FloatPossibilities) -> FloatPossibilities {
+        pub fn abs(lhs: &FnArg) -> FnArg {
+            fn possibilities(lhs: &FloatPossibilities) -> FloatPossibilities {
                 FloatPossibilities {
                     range: Range::Positive,
                     ..*lhs
@@ -75,10 +99,10 @@ pub mod core {
             return_possibilities!(lhs)
         }
 
-        pub const fn ceil(lhs: &FnArg) -> FnArg {
-            const fn possibilities(lhs: &FloatPossibilities) -> FloatPossibilities {
+        pub fn ceil(lhs: &FnArg) -> FnArg {
+            fn possibilities(lhs: &FloatPossibilities) -> FloatPossibilities {
                 FloatPossibilities {
-                    zero: lhs.zero || lhs.range.can_be_negative(),
+                    zero: or!(lhs.zero, lhs.range.can_be_negative()),
                     ..*lhs
                 }
             }
@@ -86,10 +110,10 @@ pub mod core {
             return_possibilities!(lhs)
         }
 
-        pub const fn floor(lhs: &FnArg) -> FnArg {
-            const fn possibilities(lhs: &FloatPossibilities) -> FloatPossibilities {
+        pub fn floor(lhs: &FnArg) -> FnArg {
+            fn possibilities(lhs: &FloatPossibilities) -> FloatPossibilities {
                 FloatPossibilities {
-                    zero: lhs.zero || lhs.range.can_be_positive(),
+                    zero: or!(lhs.zero, lhs.range.can_be_positive()),
                     ..*lhs
                 }
             }
@@ -97,29 +121,35 @@ pub mod core {
             return_possibilities!(lhs)
         }
 
-        pub const fn round(lhs: &FnArg) -> FnArg {
-            const fn possibilities(lhs: &FloatPossibilities) -> FloatPossibilities {
-                FloatPossibilities { zero: true, ..*lhs }
-            }
-
-            return_possibilities!(lhs)
-        }
-
-        pub const fn trunc(lhs: &FnArg) -> FnArg {
-            const fn possibilities(lhs: &FloatPossibilities) -> FloatPossibilities {
-                FloatPossibilities { zero: true, ..*lhs }
-            }
-
-            return_possibilities!(lhs)
-        }
-
-        pub const fn fract(lhs: &FnArg) -> FnArg {
-            const fn possibilities(lhs: &FloatPossibilities) -> FloatPossibilities {
+        pub fn round(lhs: &FnArg) -> FnArg {
+            fn possibilities(lhs: &FloatPossibilities) -> FloatPossibilities {
                 FloatPossibilities {
-                    zero: true,
-                    nan: lhs.nan || lhs.infinite,
+                    zero: Possible::Yes,
+                    ..*lhs
+                }
+            }
+
+            return_possibilities!(lhs)
+        }
+
+        pub fn trunc(lhs: &FnArg) -> FnArg {
+            fn possibilities(lhs: &FloatPossibilities) -> FloatPossibilities {
+                FloatPossibilities {
+                    zero: Possible::Yes,
+                    ..*lhs
+                }
+            }
+
+            return_possibilities!(lhs)
+        }
+
+        pub fn fract(lhs: &FnArg) -> FnArg {
+            fn possibilities(lhs: &FloatPossibilities) -> FloatPossibilities {
+                FloatPossibilities {
+                    zero: Possible::Yes,
+                    nan: or!(lhs.nan, lhs.infinite),
                     // Returns POSITIVE zero if the factional part is zero
-                    range: if lhs.range.can_be_negative() {
+                    range: if lhs.range.can_be_negative() == Possible::Yes {
                         Range::Full
                     } else {
                         Range::Positive
@@ -131,21 +161,21 @@ pub mod core {
             return_possibilities!(lhs)
         }
 
-        pub const fn signum(lhs: &FnArg) -> FnArg {
-            const fn possibilities(lhs: &FloatPossibilities) -> FloatPossibilities {
+        pub fn signum(lhs: &FnArg) -> FnArg {
+            fn possibilities(lhs: &FloatPossibilities) -> FloatPossibilities {
                 FloatPossibilities {
-                    zero: false,
-                    infinite: false,
+                    zero: Possible::No,
+                    infinite: Possible::No,
                     range: lhs.range,
-                    nan: false,
+                    nan: Possible::No,
                 }
             }
 
             return_possibilities!(lhs)
         }
 
-        pub const fn sqrt(lhs: &FnArg) -> FnArg {
-            const fn possibilities(lhs: &FloatPossibilities) -> FloatPossibilities {
+        pub fn sqrt(lhs: &FnArg) -> FnArg {
+            fn possibilities(lhs: &FloatPossibilities) -> FloatPossibilities {
                 FloatPossibilities {
                     nan: lhs.range.can_be_negative(),
                     ..*lhs
@@ -155,8 +185,8 @@ pub mod core {
             return_possibilities!(lhs)
         }
 
-        pub const fn exp(lhs: &FnArg) -> FnArg {
-            const fn possibilities(lhs: &FloatPossibilities) -> FloatPossibilities {
+        pub fn exp(lhs: &FnArg) -> FnArg {
+            fn possibilities(lhs: &FloatPossibilities) -> FloatPossibilities {
                 FloatPossibilities {
                     range: Range::Positive,
                     zero: lhs.range.can_be_negative(),
@@ -168,16 +198,16 @@ pub mod core {
             return_possibilities!(lhs)
         }
 
-        pub const fn exp2(lhs: &FnArg) -> FnArg {
+        pub fn exp2(lhs: &FnArg) -> FnArg {
             exp(lhs)
         }
 
-        pub const fn ln(lhs: &FnArg) -> FnArg {
-            const fn possibilities(lhs: &FloatPossibilities) -> FloatPossibilities {
+        pub fn ln(lhs: &FnArg) -> FnArg {
+            fn possibilities(lhs: &FloatPossibilities) -> FloatPossibilities {
                 FloatPossibilities {
                     range: Range::Full,
                     zero: lhs.range.can_be_positive(),
-                    infinite: lhs.infinite || lhs.zero,
+                    infinite: or!(lhs.infinite, lhs.zero),
                     nan: lhs.range.can_be_negative(),
                 }
             }
@@ -185,19 +215,19 @@ pub mod core {
             return_possibilities!(lhs)
         }
 
-        pub const fn log2(lhs: &FnArg) -> FnArg {
+        pub fn log2(lhs: &FnArg) -> FnArg {
             ln(lhs)
         }
 
-        pub const fn log10(lhs: &FnArg) -> FnArg {
+        pub fn log10(lhs: &FnArg) -> FnArg {
             ln(lhs)
         }
 
-        pub const fn to_degrees(lhs: &FnArg) -> FnArg {
-            const fn possibilities(lhs: &FloatPossibilities) -> FloatPossibilities {
+        pub fn to_degrees(lhs: &FnArg) -> FnArg {
+            fn possibilities(lhs: &FloatPossibilities) -> FloatPossibilities {
                 FloatPossibilities {
                     // May reach Infinity with large values
-                    infinite: true,
+                    infinite: Possible::Yes,
                     ..*lhs
                 }
             }
@@ -205,74 +235,74 @@ pub mod core {
             return_possibilities!(lhs)
         }
 
-        pub const fn to_radians(lhs: &FnArg) -> FnArg {
+        pub fn to_radians(lhs: &FnArg) -> FnArg {
             *lhs
         }
 
-        pub const fn cbrt(lhs: &FnArg) -> FnArg {
+        pub fn cbrt(lhs: &FnArg) -> FnArg {
             *lhs
         }
 
-        pub const fn sin(lhs: &FnArg) -> FnArg {
-            const fn possibilities(lhs: &FloatPossibilities) -> FloatPossibilities {
+        pub fn sin(lhs: &FnArg) -> FnArg {
+            fn possibilities(lhs: &FloatPossibilities) -> FloatPossibilities {
                 FloatPossibilities {
                     range: Range::Full,
-                    zero: true,
-                    infinite: false,
-                    nan: lhs.nan || lhs.infinite,
+                    zero: Possible::Yes,
+                    infinite: Possible::No,
+                    nan: or!(lhs.nan, lhs.infinite),
                 }
             }
 
             return_possibilities!(lhs)
         }
 
-        pub const fn cos(lhs: &FnArg) -> FnArg {
+        pub fn cos(lhs: &FnArg) -> FnArg {
             sin(lhs)
         }
 
-        pub const fn tan(lhs: &FnArg) -> FnArg {
-            const fn possibilities(lhs: &FloatPossibilities) -> FloatPossibilities {
+        pub fn tan(lhs: &FnArg) -> FnArg {
+            fn possibilities(lhs: &FloatPossibilities) -> FloatPossibilities {
                 FloatPossibilities {
                     range: Range::Full,
-                    zero: true,
-                    infinite: true,
-                    nan: lhs.nan || lhs.infinite,
+                    zero: Possible::Yes,
+                    infinite: Possible::Yes,
+                    nan: or!(lhs.nan, lhs.infinite),
                 }
             }
 
             return_possibilities!(lhs)
         }
 
-        pub const fn asin(lhs: &FnArg) -> FnArg {
-            const fn possibilities(lhs: &FloatPossibilities) -> FloatPossibilities {
+        pub fn asin(lhs: &FnArg) -> FnArg {
+            fn possibilities(lhs: &FloatPossibilities) -> FloatPossibilities {
                 FloatPossibilities {
                     range: lhs.range,
                     zero: lhs.zero,
-                    infinite: false,
-                    nan: true,
+                    infinite: Possible::No,
+                    nan: Possible::Yes,
                 }
             }
 
             return_possibilities!(lhs)
         }
 
-        pub const fn acos(lhs: &FnArg) -> FnArg {
-            const fn possibilities(_lhs: &FloatPossibilities) -> FloatPossibilities {
+        pub fn acos(lhs: &FnArg) -> FnArg {
+            fn possibilities(_lhs: &FloatPossibilities) -> FloatPossibilities {
                 FloatPossibilities {
                     range: Range::Positive,
-                    zero: true,
-                    infinite: false,
-                    nan: true,
+                    zero: Possible::Yes,
+                    infinite: Possible::No,
+                    nan: Possible::Yes,
                 }
             }
 
             return_possibilities!(lhs)
         }
 
-        pub const fn atan(lhs: &FnArg) -> FnArg {
-            const fn possibilities(lhs: &FloatPossibilities) -> FloatPossibilities {
+        pub fn atan(lhs: &FnArg) -> FnArg {
+            fn possibilities(lhs: &FloatPossibilities) -> FloatPossibilities {
                 FloatPossibilities {
-                    infinite: false,
+                    infinite: Possible::No,
                     ..*lhs
                 }
             }
@@ -280,8 +310,8 @@ pub mod core {
             return_possibilities!(lhs)
         }
 
-        pub const fn exp_m1(lhs: &FnArg) -> FnArg {
-            const fn possibilities(lhs: &FloatPossibilities) -> FloatPossibilities {
+        pub fn exp_m1(lhs: &FnArg) -> FnArg {
+            fn possibilities(lhs: &FloatPossibilities) -> FloatPossibilities {
                 FloatPossibilities {
                     infinite: lhs.range.can_be_positive(),
                     ..*lhs
@@ -291,11 +321,11 @@ pub mod core {
             return_possibilities!(lhs)
         }
 
-        pub const fn ln_1p(lhs: &FnArg) -> FnArg {
-            const fn possibilities(lhs: &FloatPossibilities) -> FloatPossibilities {
+        pub fn ln_1p(lhs: &FnArg) -> FnArg {
+            fn possibilities(lhs: &FloatPossibilities) -> FloatPossibilities {
                 FloatPossibilities {
                     range: Range::Positive,
-                    nan: lhs.nan || lhs.range.can_be_negative(),
+                    nan: or!(lhs.nan, lhs.range.can_be_negative()),
                     ..*lhs
                 }
             }
@@ -303,10 +333,10 @@ pub mod core {
             return_possibilities!(lhs)
         }
 
-        pub const fn sinh(lhs: &FnArg) -> FnArg {
-            const fn possibilities(lhs: &FloatPossibilities) -> FloatPossibilities {
+        pub fn sinh(lhs: &FnArg) -> FnArg {
+            fn possibilities(lhs: &FloatPossibilities) -> FloatPossibilities {
                 FloatPossibilities {
-                    infinite: true,
+                    infinite: Possible::Yes,
                     ..*lhs
                 }
             }
@@ -314,12 +344,12 @@ pub mod core {
             return_possibilities!(lhs)
         }
 
-        pub const fn cosh(lhs: &FnArg) -> FnArg {
-            const fn possibilities(lhs: &FloatPossibilities) -> FloatPossibilities {
+        pub fn cosh(lhs: &FnArg) -> FnArg {
+            fn possibilities(lhs: &FloatPossibilities) -> FloatPossibilities {
                 FloatPossibilities {
                     range: Range::Positive,
-                    zero: false,
-                    infinite: true,
+                    zero: Possible::No,
+                    infinite: Possible::Yes,
                     nan: lhs.nan,
                 }
             }
@@ -327,10 +357,10 @@ pub mod core {
             return_possibilities!(lhs)
         }
 
-        pub const fn tanh(lhs: &FnArg) -> FnArg {
-            const fn possibilities(lhs: &FloatPossibilities) -> FloatPossibilities {
+        pub fn tanh(lhs: &FnArg) -> FnArg {
+            fn possibilities(lhs: &FloatPossibilities) -> FloatPossibilities {
                 FloatPossibilities {
-                    infinite: false,
+                    infinite: Possible::No,
                     ..*lhs
                 }
             }
@@ -338,10 +368,10 @@ pub mod core {
             return_possibilities!(lhs)
         }
 
-        pub const fn asinh(lhs: &FnArg) -> FnArg {
-            const fn possibilities(lhs: &FloatPossibilities) -> FloatPossibilities {
+        pub fn asinh(lhs: &FnArg) -> FnArg {
+            fn possibilities(lhs: &FloatPossibilities) -> FloatPossibilities {
                 FloatPossibilities {
-                    infinite: true,
+                    infinite: Possible::Yes,
                     ..*lhs
                 }
             }
@@ -349,34 +379,34 @@ pub mod core {
             return_possibilities!(lhs)
         }
 
-        pub const fn acosh(lhs: &FnArg) -> FnArg {
-            const fn possibilities(_lhs: &FloatPossibilities) -> FloatPossibilities {
+        pub fn acosh(lhs: &FnArg) -> FnArg {
+            fn possibilities(_lhs: &FloatPossibilities) -> FloatPossibilities {
                 FloatPossibilities {
                     range: Range::Positive,
-                    zero: true,
-                    infinite: true,
-                    nan: true,
+                    zero: Possible::Yes,
+                    infinite: Possible::Yes,
+                    nan: Possible::Yes,
                 }
             }
 
             return_possibilities!(lhs)
         }
 
-        pub const fn atanh(lhs: &FnArg) -> FnArg {
-            const fn possibilities(lhs: &FloatPossibilities) -> FloatPossibilities {
+        pub fn atanh(lhs: &FnArg) -> FnArg {
+            fn possibilities(lhs: &FloatPossibilities) -> FloatPossibilities {
                 FloatPossibilities {
                     range: lhs.range,
                     zero: lhs.zero,
-                    infinite: true,
-                    nan: true,
+                    infinite: Possible::Yes,
+                    nan: Possible::Yes,
                 }
             }
 
             return_possibilities!(lhs)
         }
 
-        pub const fn recip(lhs: &FnArg) -> FnArg {
-            const fn possibilities(lhs: &FloatPossibilities) -> FloatPossibilities {
+        pub fn recip(lhs: &FnArg) -> FnArg {
+            fn possibilities(lhs: &FloatPossibilities) -> FloatPossibilities {
                 FloatPossibilities {
                     range: lhs.range,
                     zero: lhs.infinite,
@@ -389,16 +419,16 @@ pub mod core {
         }
 
         // TODO: add argument
-        pub const fn powi(lhs: &FnArg) -> FnArg {
-            const fn possibilities(lhs: &FloatPossibilities) -> FloatPossibilities {
+        pub fn powi(lhs: &FnArg) -> FnArg {
+            fn possibilities(lhs: &FloatPossibilities) -> FloatPossibilities {
                 FloatPossibilities {
-                    range: if lhs.range.can_be_negative() {
+                    range: if lhs.range.can_be_negative() == Possible::Yes {
                         Range::Full
                     } else {
                         Range::Positive
                     },
-                    zero: true,
-                    infinite: true,
+                    zero: Possible::Yes,
+                    infinite: Possible::Yes,
                     nan: lhs.nan,
                 }
             }
