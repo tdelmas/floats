@@ -155,7 +155,7 @@ pub mod core {
             return_possibilities!(lhs)
         }
 
-        pub const fn exp2(lhs: &FnArg) -> FnArg {
+        pub const fn exp(lhs: &FnArg) -> FnArg {
             const fn possibilities(lhs: &FloatPossibilities) -> FloatPossibilities {
                 FloatPossibilities {
                     range: Range::Positive,
@@ -166,6 +166,10 @@ pub mod core {
             }
 
             return_possibilities!(lhs)
+        }
+
+        pub const fn exp2(lhs: &FnArg) -> FnArg {
+            exp(lhs)
         }
 
         pub const fn ln(lhs: &FnArg) -> FnArg {
@@ -377,6 +381,24 @@ pub mod core {
                     range: lhs.range,
                     zero: lhs.infinite,
                     infinite: lhs.zero,
+                    nan: lhs.nan,
+                }
+            }
+
+            return_possibilities!(lhs)
+        }
+
+        // TODO: add argument
+        pub const fn powi(lhs: &FnArg) -> FnArg {
+            const fn possibilities(lhs: &FloatPossibilities) -> FloatPossibilities {
+                FloatPossibilities {
+                    range: if lhs.range.can_be_negative() {
+                        Range::Full
+                    } else {
+                        Range::Positive
+                    },
+                    zero: true,
+                    infinite: true,
                     nan: lhs.nan,
                 }
             }

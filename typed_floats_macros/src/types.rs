@@ -167,8 +167,7 @@ pub fn output_name(output: &ReturnTypeDefinition, float_type: &Ident) -> proc_ma
 }
 
 type OpCallback = Box<dyn Fn(&FloatDefinition) -> proc_macro2::TokenStream>;
-type SimpleResultCallback = Box<dyn Fn(&FloatDefinition) -> ReturnTypeSpecification>;
-type SimpleResultCallback2 = Box<dyn Fn(&float_fn_types::FnArg) -> float_fn_types::FnArg>;
+type SimpleResultCallback = Box<dyn Fn(&float_fn_types::FnArg) -> float_fn_types::FnArg>;
 type ResultCallback = Box<dyn Fn(&FloatDefinition, &[FloatDefinition]) -> ReturnTypeDefinition>;
 type TestCallback = Box<dyn Fn(&Ident) -> proc_macro2::TokenStream>;
 
@@ -255,16 +254,6 @@ impl OpBuilder {
     }
 
     pub fn result(mut self, result: SimpleResultCallback) -> Self {
-        self.op.result = Box::new(move |float, floats| {
-            let output_spec = (result)(float);
-
-            return_type_definition(&output_spec, floats)
-        });
-
-        self
-    }
-
-    pub fn result2(mut self, result: SimpleResultCallback2) -> Self {
         self.op.result = Box::new(move |float, floats| {
             let input = float_fn_types::FnArg::F32(float_fn_types::FloatPossibilities {
                 nan: false,

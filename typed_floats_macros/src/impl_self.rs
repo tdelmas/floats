@@ -13,7 +13,7 @@ pub fn get_impl_self() -> Vec<Op> {
             .op_test(Box::new(|var| {
                 quote! { -#var }
             }))
-            .result2(Box::new(float_fn_types::core::ops::neg))
+            .result(Box::new(float_fn_types::core::ops::neg))
             .build(),
         #[cfg(any(feature = "std", feature = "libm"))]
         OpBuilder::new("abs")
@@ -48,7 +48,7 @@ pub fn get_impl_self() -> Vec<Op> {
                     quote! { self.get().abs() }
                 }
             }))
-            .result2(Box::new(float_fn_types::core::ops::abs))
+            .result(Box::new(float_fn_types::core::ops::abs))
             .build(),
         #[cfg(any(feature = "std", feature = "libm"))]
         OpBuilder::new("ceil")
@@ -71,7 +71,7 @@ pub fn get_impl_self() -> Vec<Op> {
                 ///
                 /// See [`f64::ceil()`] for more details.
             })
-            .result2(Box::new(float_fn_types::core::ops::ceil))
+            .result(Box::new(float_fn_types::core::ops::ceil))
             .build(),
         #[cfg(any(feature = "std", feature = "libm"))]
         OpBuilder::new("floor")
@@ -94,7 +94,7 @@ pub fn get_impl_self() -> Vec<Op> {
                 ///
                 /// See [`f64::floor()`] for more details.
             })
-            .result2(Box::new(float_fn_types::core::ops::floor))
+            .result(Box::new(float_fn_types::core::ops::floor))
             .build(),
         #[cfg(any(feature = "std", feature = "libm"))]
         OpBuilder::new("round")
@@ -118,7 +118,7 @@ pub fn get_impl_self() -> Vec<Op> {
                 ///
                 /// See [`f64::round()`] for more details.
             })
-            .result2(Box::new(float_fn_types::core::ops::round))
+            .result(Box::new(float_fn_types::core::ops::round))
             .build(),
         #[cfg(any(feature = "std", feature = "libm"))]
         OpBuilder::new("trunc")
@@ -142,7 +142,7 @@ pub fn get_impl_self() -> Vec<Op> {
                 ///
                 /// See [`f64::trunc()`] for more details.
             })
-            .result2(Box::new(float_fn_types::core::ops::trunc))
+            .result(Box::new(float_fn_types::core::ops::trunc))
             .build(),
         #[cfg(any(feature = "std", feature = "libm"))]
         OpBuilder::new("fract")
@@ -171,7 +171,7 @@ pub fn get_impl_self() -> Vec<Op> {
             .comment(
                 "`fract` returns `+0.0` if the factional part is zero, even for negative numbers.",
             )
-            .result2(Box::new(float_fn_types::core::ops::fract))
+            .result(Box::new(float_fn_types::core::ops::fract))
             .build(),
         #[cfg(any(feature = "std", feature = "libm"))]
         OpBuilder::new("signum")
@@ -209,7 +209,7 @@ pub fn get_impl_self() -> Vec<Op> {
                     quote! { self.get().signum() }
                 }
             }))
-            .result2(Box::new(float_fn_types::core::ops::signum))
+            .result(Box::new(float_fn_types::core::ops::signum))
             .build(),
         #[cfg(any(feature = "std", feature = "libm"))]
         OpBuilder::new("sqrt")
@@ -249,7 +249,7 @@ pub fn get_impl_self() -> Vec<Op> {
                     quote! { self.get().sqrt() }
                 }
             }))
-            .result2(Box::new(float_fn_types::core::ops::sqrt))
+            .result(Box::new(float_fn_types::core::ops::sqrt))
             .build(),
         #[cfg(any(feature = "std", feature = "libm"))]
         OpBuilder::new("exp")
@@ -275,14 +275,7 @@ pub fn get_impl_self() -> Vec<Op> {
                 ///
                 /// See [`f64::exp()`] for more details.
             })
-            .result(Box::new(|float| {
-                ReturnTypeSpecification::FloatSpecifications(FloatSpecifications {
-                    accept_negative: false,
-                    accept_positive: true,
-                    accept_zero: float.s.accept_negative,
-                    accept_inf: float.s.accept_positive,
-                })
-            }))
+            .result(Box::new(float_fn_types::core::ops::exp))
             .build(),
         #[cfg(any(feature = "std", feature = "libm"))]
         OpBuilder::new("exp2")
@@ -308,7 +301,7 @@ pub fn get_impl_self() -> Vec<Op> {
                 ///
                 /// See [`f64::exp2()`] for more details.
             })
-            .result2(Box::new(float_fn_types::core::ops::exp2))
+            .result(Box::new(float_fn_types::core::ops::exp2))
             .build(),
         #[cfg(any(feature = "std", feature = "libm"))]
         OpBuilder::new("ln")
@@ -347,7 +340,7 @@ pub fn get_impl_self() -> Vec<Op> {
                     quote! { self.get().ln() }
                 }
             }))
-            .result2(Box::new(float_fn_types::core::ops::ln))
+            .result(Box::new(float_fn_types::core::ops::ln))
             .build(),
         #[cfg(any(feature = "std", feature = "libm"))]
         OpBuilder::new("log2")
@@ -377,7 +370,7 @@ pub fn get_impl_self() -> Vec<Op> {
                 ///
                 /// See [`f64::log2()`] for more details.
             })
-            .result2(Box::new(float_fn_types::core::ops::log2))
+            .result(Box::new(float_fn_types::core::ops::log2))
             .build(),
         #[cfg(any(feature = "std", feature = "libm"))]
         OpBuilder::new("log10")
@@ -407,7 +400,7 @@ pub fn get_impl_self() -> Vec<Op> {
                 ///
                 /// See [`f64::log10()`] for more details.
             })
-            .result2(Box::new(float_fn_types::core::ops::log10))
+            .result(Box::new(float_fn_types::core::ops::log10))
             .build(),
         OpBuilder::new("to_degrees")
             .description(quote! {
@@ -434,7 +427,7 @@ pub fn get_impl_self() -> Vec<Op> {
                 ///
                 /// See [`f64::to_degrees()`] for more details.
             })
-            .result2(Box::new(float_fn_types::core::ops::to_degrees))
+            .result(Box::new(float_fn_types::core::ops::to_degrees))
             .build(),
         OpBuilder::new("to_radians")
             .description(quote! {
@@ -460,7 +453,7 @@ pub fn get_impl_self() -> Vec<Op> {
                 ///
                 /// See [`f64::to_radians()`] for more details.
             })
-            .result2(Box::new(float_fn_types::core::ops::to_radians))
+            .result(Box::new(float_fn_types::core::ops::to_radians))
             .build(),
         #[cfg(any(feature = "std", feature = "libm"))]
         OpBuilder::new("cbrt")
@@ -488,9 +481,7 @@ pub fn get_impl_self() -> Vec<Op> {
                 ///
                 /// See [`f64::cbrt()`] for more details.
             })
-            .result(Box::new(|float| {
-                ReturnTypeSpecification::FloatSpecifications(float.s.clone())
-            }))
+            .result(Box::new(float_fn_types::core::ops::cbrt))
             .build(),
         #[cfg(any(feature = "std", feature = "libm"))]
         OpBuilder::new("sin")
@@ -527,18 +518,7 @@ pub fn get_impl_self() -> Vec<Op> {
                 ///
                 /// See [`f64::sin()`] for more details.
             })
-            .result(Box::new(|float| {
-                if float.s.accept_inf {
-                    return ReturnTypeSpecification::NativeFloat;
-                }
-
-                ReturnTypeSpecification::FloatSpecifications(FloatSpecifications {
-                    accept_negative: true,
-                    accept_positive: true,
-                    accept_zero: true,
-                    accept_inf: false,
-                })
-            }))
+            .result(Box::new(float_fn_types::core::ops::sin))
             .build(),
         #[cfg(any(feature = "std", feature = "libm"))]
         OpBuilder::new("cos")
@@ -574,7 +554,7 @@ pub fn get_impl_self() -> Vec<Op> {
                 ///
                 /// See [`f64::cos()`] for more details.
             })
-            .result2(Box::new(float_fn_types::core::ops::cos))
+            .result(Box::new(float_fn_types::core::ops::cos))
             .build(),
         #[cfg(any(feature = "std", feature = "libm"))]
         OpBuilder::new("tan")
@@ -598,7 +578,7 @@ pub fn get_impl_self() -> Vec<Op> {
                 ///
                 /// See [`f64::tan()`] for more details.
             })
-            .result2(Box::new(float_fn_types::core::ops::tan))
+            .result(Box::new(float_fn_types::core::ops::tan))
             .build(),
         #[cfg(any(feature = "std", feature = "libm"))]
         OpBuilder::new("asin")
@@ -626,7 +606,7 @@ pub fn get_impl_self() -> Vec<Op> {
                 ///
                 /// See [`f64::asin()`] for more details.
             })
-            .result2(Box::new(float_fn_types::core::ops::asin))
+            .result(Box::new(float_fn_types::core::ops::asin))
             .build(),
         #[cfg(any(feature = "std", feature = "libm"))]
         OpBuilder::new("acos")
@@ -657,7 +637,7 @@ pub fn get_impl_self() -> Vec<Op> {
                 ///
                 /// See [`f64::acos()`] for more details.
             })
-            .result2(Box::new(float_fn_types::core::ops::acos))
+            .result(Box::new(float_fn_types::core::ops::acos))
             .build(),
         #[cfg(any(feature = "std", feature = "libm"))]
         OpBuilder::new("atan")
@@ -679,7 +659,7 @@ pub fn get_impl_self() -> Vec<Op> {
                 ///
                 /// See [`f64::atan()`] for more details.
             })
-            .result2(Box::new(float_fn_types::core::ops::atan))
+            .result(Box::new(float_fn_types::core::ops::atan))
             .build(),
         #[cfg(any(feature = "std", feature = "libm"))]
         OpBuilder::new("exp_m1")
@@ -699,7 +679,7 @@ pub fn get_impl_self() -> Vec<Op> {
                 ///
                 /// See [`f64::exp_m1()`] for more details.
             })
-            .result2(Box::new(float_fn_types::core::ops::exp_m1))
+            .result(Box::new(float_fn_types::core::ops::exp_m1))
             .build(),
         #[cfg(any(feature = "std", feature = "libm"))]
         OpBuilder::new("ln_1p")
@@ -723,7 +703,7 @@ pub fn get_impl_self() -> Vec<Op> {
                 ///
                 /// See [`f64::ln_1p()`] for more details.
             })
-            .result2(Box::new(float_fn_types::core::ops::ln_1p))
+            .result(Box::new(float_fn_types::core::ops::ln_1p))
             .build(),
         #[cfg(any(feature = "std", feature = "libm"))]
         OpBuilder::new("sinh")
@@ -743,7 +723,7 @@ pub fn get_impl_self() -> Vec<Op> {
                 ///
                 /// See [`f64::sinh()`] for more details.
             })
-            .result2(Box::new(float_fn_types::core::ops::sinh))
+            .result(Box::new(float_fn_types::core::ops::sinh))
             .build(),
         #[cfg(any(feature = "std", feature = "libm"))]
         OpBuilder::new("cosh")
@@ -763,7 +743,7 @@ pub fn get_impl_self() -> Vec<Op> {
                 ///
                 /// See [`f64::cosh()`] for more details.
             })
-            .result2(Box::new(float_fn_types::core::ops::cosh))
+            .result(Box::new(float_fn_types::core::ops::cosh))
             .build(),
         #[cfg(any(feature = "std", feature = "libm"))]
         OpBuilder::new("tanh")
@@ -783,7 +763,7 @@ pub fn get_impl_self() -> Vec<Op> {
                 ///
                 /// See [`f64::tanh()`] for more details.
             })
-            .result2(Box::new(float_fn_types::core::ops::tanh))
+            .result(Box::new(float_fn_types::core::ops::tanh))
             .build(),
         #[cfg(any(feature = "std", feature = "libm"))]
         OpBuilder::new("asinh")
@@ -803,7 +783,7 @@ pub fn get_impl_self() -> Vec<Op> {
                 ///
                 /// See [`f64::asinh()`] for more details.
             })
-            .result2(Box::new(float_fn_types::core::ops::asinh))
+            .result(Box::new(float_fn_types::core::ops::asinh))
             .build(),
         #[cfg(any(feature = "std", feature = "libm"))]
         OpBuilder::new("acosh")
@@ -826,7 +806,7 @@ pub fn get_impl_self() -> Vec<Op> {
                 ///
                 /// See [`f64::acosh()`] for more details.
             })
-            .result2(Box::new(float_fn_types::core::ops::acosh))
+            .result(Box::new(float_fn_types::core::ops::acosh))
             .build(),
         #[cfg(any(feature = "std", feature = "libm"))]
         OpBuilder::new("atanh")
@@ -852,7 +832,7 @@ pub fn get_impl_self() -> Vec<Op> {
                 ///
                 /// See [`f64::atanh()`] for more details.
             })
-            .result2(Box::new(float_fn_types::core::ops::atanh))
+            .result(Box::new(float_fn_types::core::ops::atanh))
             .build(),
         OpBuilder::new("recip")
             .description(quote! {
@@ -877,7 +857,7 @@ pub fn get_impl_self() -> Vec<Op> {
                 ///
                 /// See [`f64::recip()`] for more details.
             })
-            .result2(Box::new(float_fn_types::core::ops::recip))
+            .result(Box::new(float_fn_types::core::ops::recip))
             .build(),
         #[cfg(any(feature = "std", feature = "libm"))]
         OpBuilder::new("powi")
@@ -910,14 +890,7 @@ pub fn get_impl_self() -> Vec<Op> {
                 /// ```
                 /// See [`f64::powi()`] for more details.
             })
-            .result(Box::new(|float| {
-                ReturnTypeSpecification::FloatSpecifications(FloatSpecifications {
-                    accept_negative: float.s.accept_negative,
-                    accept_positive: true,
-                    accept_zero: true,
-                    accept_inf: true,
-                })
-            }))
+            .result(Box::new(float_fn_types::core::ops::powi))
             .skip_check_return_type_strictness()
             .op_test(Box::new(|var| {
                 quote! { #var.powi(2) }
