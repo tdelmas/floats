@@ -94,8 +94,8 @@ pub fn return_type_definition2(
         ReturnTypeSpecification::FloatSpecifications(FloatSpecifications {
             accept_inf: float.infinite,
             accept_zero: float.zero,
-            accept_positive: float.positive,
-            accept_negative: float.negative,
+            accept_positive: float.range.can_be_positive(),
+            accept_negative: float.range.can_be_negative(),
         })
     };
 
@@ -270,8 +270,13 @@ impl OpBuilder {
                 nan: false,
                 zero: float.s.accept_zero,
                 infinite: float.s.accept_inf,
-                positive: float.s.accept_positive,
-                negative: float.s.accept_negative,
+                range: if float.s.accept_positive && float.s.accept_negative {
+                    float_fn_types::Range::Full
+                } else if float.s.accept_positive {
+                    float_fn_types::Range::Positive
+                } else {
+                    float_fn_types::Range::Negative
+                },
             });
 
             let output_spec: float_fn_types::FnArg = (result)(&input);
