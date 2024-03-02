@@ -47,7 +47,7 @@ impl Possible {
     /// we return the strongest one :
     ///
     /// ```
-    /// use float_fn_types::Possible;
+    /// use fn_num_types::Possible;
     ///
     /// assert_eq!(Possible::Yes, Possible::any(Possible::Yes, Possible::Should));
     /// assert_eq!(Possible::Yes, Possible::any(Possible::Should, Possible::Yes));
@@ -100,7 +100,7 @@ impl FloatPossibilities {
     /// Returns true if the value is accepted
     ///
     /// ```
-    /// use float_fn_types::{FloatPossibilities, Possible, Range};
+    /// use fn_num_types::{FloatPossibilities, Possible, Range};
     ///
     /// let possibilities = FloatPossibilities {
     ///     nan: Possible::Yes,

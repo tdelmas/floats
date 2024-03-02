@@ -1,5 +1,5 @@
 [workspace]
-members = ["xtask", "typed_floats", "typed_floats_macros", "float_fn_types"]
+members = ["xtask", "typed_floats", "typed_floats_macros", "fn_num_types"]
 resolver = "2"
 
 [workspace.package]

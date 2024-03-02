@@ -1,4 +1,4 @@
-use float_fn_types::{FloatPossibilities, FnArg, Possible, Range};
+use fn_num_types::{FloatPossibilities, FnArg, Possible, Range};
 
 macro_rules! get_test_values {
     ($float_type:ident) => {
@@ -106,12 +106,12 @@ fn test_op(name: &str, op: fn(f64) -> f64, ty: fn(&FnArg) -> FnArg) {
 
 macro_rules! test_op {
     ($op:ident) => {
-        test_op(stringify!($op), |x| x.$op(), float_fn_types::core::ops::$op);
+        test_op(stringify!($op), |x| x.$op(), fn_num_types::core::ops::$op);
     };
 }
 #[test]
 fn test_ops() {
-    test_op("neg", |x| -x, float_fn_types::core::ops::neg);
+    test_op("neg", |x| -x, fn_num_types::core::ops::neg);
     test_op!(abs);
     test_op!(ceil);
     test_op!(floor);
@@ -143,9 +143,5 @@ fn test_ops() {
     test_op!(acosh);
     test_op!(atanh);
     test_op!(recip);
-    test_op(
-        "powi",
-        |x| x.powi(2),
-        |x| float_fn_types::core::ops::powi(x),
-    );
+    test_op("powi", |x| x.powi(2), |x| fn_num_types::core::ops::powi(x));
 }

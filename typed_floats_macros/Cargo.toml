@@ -20,5 +20,5 @@ quote = "1.0"
 syn = { version = "2.0" }
 proc-macro2 = "1.0"
 
-[dependencies.float_fn_types]
-path = "../float_fn_types"
+[dependencies.fn_num_types]
+path = "../fn_num_types"

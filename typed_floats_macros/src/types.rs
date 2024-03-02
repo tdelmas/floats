@@ -80,22 +80,22 @@ pub enum ReturnTypeDefinition {
 }
 
 pub fn return_type_definition2(
-    float: &float_fn_types::FnArg,
+    float: &fn_num_types::FnArg,
     floats: &[FloatDefinition],
 ) -> ReturnTypeDefinition {
     let float = match float {
-        float_fn_types::FnArg::F32(float) => float,
-        float_fn_types::FnArg::F64(float) => float,
+        fn_num_types::FnArg::F32(float) => float,
+        fn_num_types::FnArg::F64(float) => float,
     };
 
-    let float: ReturnTypeSpecification = if float.nan != float_fn_types::Possible::No {
+    let float: ReturnTypeSpecification = if float.nan != fn_num_types::Possible::No {
         ReturnTypeSpecification::NativeFloat
     } else {
         ReturnTypeSpecification::FloatSpecifications(FloatSpecifications {
-            accept_inf: float.infinite != float_fn_types::Possible::No,
-            accept_zero: float.zero != float_fn_types::Possible::No,
-            accept_positive: float.range.can_be_positive() != float_fn_types::Possible::No,
-            accept_negative: float.range.can_be_negative() != float_fn_types::Possible::No,
+            accept_inf: float.infinite != fn_num_types::Possible::No,
+            accept_zero: float.zero != fn_num_types::Possible::No,
+            accept_positive: float.range.can_be_positive() != fn_num_types::Possible::No,
+            accept_negative: float.range.can_be_negative() != fn_num_types::Possible::No,
         })
     };
 
@@ -167,7 +167,7 @@ pub fn output_name(output: &ReturnTypeDefinition, float_type: &Ident) -> proc_ma
 }
 
 type OpCallback = Box<dyn Fn(&FloatDefinition) -> proc_macro2::TokenStream>;
-type SimpleResultCallback = Box<dyn Fn(&float_fn_types::FnArg) -> float_fn_types::FnArg>;
+type SimpleResultCallback = Box<dyn Fn(&fn_num_types::FnArg) -> fn_num_types::FnArg>;
 type ResultCallback = Box<dyn Fn(&FloatDefinition, &[FloatDefinition]) -> ReturnTypeDefinition>;
 type TestCallback = Box<dyn Fn(&Ident) -> proc_macro2::TokenStream>;
 
@@ -255,28 +255,28 @@ impl OpBuilder {
 
     pub fn result(mut self, result: SimpleResultCallback) -> Self {
         self.op.result = Box::new(move |float, floats| {
-            let input = float_fn_types::FnArg::F32(float_fn_types::FloatPossibilities {
-                nan: float_fn_types::Possible::No,
+            let input = fn_num_types::FnArg::F32(fn_num_types::FloatPossibilities {
+                nan: fn_num_types::Possible::No,
                 zero: if float.s.accept_zero {
-                    float_fn_types::Possible::Yes
+                    fn_num_types::Possible::Yes
                 } else {
-                    float_fn_types::Possible::No
+                    fn_num_types::Possible::No
                 },
                 infinite: if float.s.accept_inf {
-                    float_fn_types::Possible::Yes
+                    fn_num_types::Possible::Yes
                 } else {
-                    float_fn_types::Possible::No
+                    fn_num_types::Possible::No
                 },
                 range: if float.s.accept_positive && float.s.accept_negative {
-                    float_fn_types::Range::Full
+                    fn_num_types::Range::Full
                 } else if float.s.accept_positive {
-                    float_fn_types::Range::Positive
+                    fn_num_types::Range::Positive
                 } else {
-                    float_fn_types::Range::Negative
+                    fn_num_types::Range::Negative
                 },
             });
 
-            let output_spec: float_fn_types::FnArg = (result)(&input);
+            let output_spec: fn_num_types::FnArg = (result)(&input);
 
             return_type_definition2(&output_spec, floats)
         });
