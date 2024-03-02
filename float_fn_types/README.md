@@ -1,0 +1,1 @@
+This trait contains the utils to know the kind of number a function can return.

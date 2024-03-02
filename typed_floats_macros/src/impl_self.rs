@@ -1,6 +1,6 @@
 use quote::quote;
 
-use crate::types::{FloatSpecifications, Op, OpBuilder, ReturnTypeSpecification};
+use crate::types::{Op, OpBuilder};
 
 pub fn get_impl_self() -> Vec<Op> {
     vec![
