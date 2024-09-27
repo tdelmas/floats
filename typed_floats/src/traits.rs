@@ -190,3 +190,27 @@ pub trait Powf<T> {
     /// See [`f64::powf()`] for more details.
     fn powf(self, rhs: T) -> Self::Output;
 }
+
+pub trait RestrictInf: Sized {
+    type Output: Sized;
+
+    fn restrict_inf(self) ->  Result<Self::Output, Self>;
+}
+
+pub trait RestrictZero: Sized {
+    type Output: Sized;
+
+    fn restrict_zero(self) ->  Result<Self::Output, Self>;
+}
+
+pub trait RestrictPositive: Sized {
+    type Output: Sized;
+
+    fn restrict_positive(self) ->  Result<Self::Output, Self>;
+}
+
+pub trait RestrictNegative: Sized {
+    type Output: Sized;
+
+    fn restrict_negative(self) ->  Result<Self::Output, Self>;
+}
