@@ -1,0 +1,45 @@
+name: No-std (musl libc) compilation
+
+on:
+  push:
+    branches: ["main"]
+    paths:
+    - 'typed_floats/**'
+    - 'typed_floats_macros/**'
+    - 'Cargo.toml'
+    - 'Cargo.lock'
+  pull_request:
+    branches: ["main"]
+    paths:
+    - 'typed_floats/**'
+    - 'typed_floats_macros/**'
+    - 'Cargo.toml'
+    - 'Cargo.lock'
+  workflow_dispatch:
+
+jobs:
+  tests:
+    runs-on: ubuntu-latest
+    name: Tests on rust ${{ matrix.version }} features "${{ matrix.features }}"
+    strategy:
+      matrix:
+        version: [
+          "beta",
+          "stable", 
+          "1.70",
+        ]
+        features: [
+            "",
+            "serde",
+            "libm",
+            "compiler_hints",
+            "ensure_no_undefined_behavior"
+        ]
+
+    steps:
+      - uses: actions/checkout@v3
+      - run: rustup default ${{ matrix.version }}
+
+      - run: cargo xtask pre-build
+      - run: cd typed_floats && cargo test --target thumbv6m-none-eabi --no-default-features --features "${{ matrix.features }}"
+      - run: cd typed_floats && cargo test --target thumbv6m-none-eabi --release --no-default-features --features "${{ matrix.features }}"
