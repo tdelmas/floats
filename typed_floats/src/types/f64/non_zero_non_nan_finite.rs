@@ -17,7 +17,7 @@ impl NonZeroNonNaNFinite<f64> {
     /// # Errors
     /// Returns an error if the value is not valid
     #[inline]
-    pub fn new(value: f64) -> Result<Self, InvalidNumber> {
+    pub const fn new(value: f64) -> Result<Self, InvalidNumber> {
         if value.is_nan() {
             return Err(InvalidNumber::NaN);
         }
@@ -157,7 +157,7 @@ impl NonZeroNonNaNFinite<f64> {
     /// See [`f64::is_subnormal()`] for more details.
     #[inline]
     #[must_use]
-    pub fn is_subnormal(&self) -> bool {
+    pub const fn is_subnormal(&self) -> bool {
         self.0.is_subnormal()
     }
 
@@ -175,7 +175,7 @@ impl NonZeroNonNaNFinite<f64> {
     /// See [`f64::is_normal()`] for more details.
     #[inline]
     #[must_use]
-    pub fn is_normal(&self) -> bool {
+    pub const fn is_normal(&self) -> bool {
         self.0.is_normal()
     }
 
@@ -195,7 +195,7 @@ impl NonZeroNonNaNFinite<f64> {
     /// See [`f64::classify()`] for more details.
     #[inline]
     #[must_use]
-    pub fn classify(&self) -> core::num::FpCategory {
+    pub const fn classify(&self) -> core::num::FpCategory {
         self.0.classify()
     }
 
@@ -213,7 +213,7 @@ impl NonZeroNonNaNFinite<f64> {
     /// See [`f64::is_sign_positive()`] for more details.
     #[inline]
     #[must_use]
-    pub fn is_sign_positive(&self) -> bool {
+    pub const fn is_sign_positive(&self) -> bool {
         self.0.is_sign_positive()
     }
 
@@ -231,7 +231,7 @@ impl NonZeroNonNaNFinite<f64> {
     /// See [`f64::is_sign_negative()`] for more details.
     #[inline]
     #[must_use]
-    pub fn is_sign_negative(&self) -> bool {
+    pub const fn is_sign_negative(&self) -> bool {
         self.0.is_sign_negative()
     }
 
